@@ -8,7 +8,7 @@
 import UIKit
 import RealityKit
 import SceneKit.ModelIO
-//import ARKit
+import ARKit
 
 
 class ViewController: UIViewController {

@@ -213,48 +213,7 @@ class ViewController: UIViewController {
     
     func repaint(){
                 
-        let box = MeshResource.generateBox(width: 0.026, height: 0.001, depth: 0.039, splitFaces: false)
-        
-        // check if card is already open and add new element if so
-        for (i, card) in displayedCards.enumerated() {
-            
-            
-            let position = positions[i]
-            card.position = [position.x * 0.05, 0, position.z * 0.05]
-            
-            if openCards.contains(card){ // card already open
-                anchor.removeChild(card)
-                
-                guard let val = values[i] else{ // name
-                    print("No Value for Key")
-                    return
-                }
-                
-                var material = SimpleMaterial()
-                material.color = .init(tint: .white.withAlphaComponent(0.999),
-                                       texture: .init(try! .load(named: val)))
-                
-                material.metallic = .float(0.9) // 1.0
-                material.roughness = .float(0.1) // 0.0
-                
-                let model = ModelEntity(mesh: box, materials: [material])
-                model.generateCollisionShapes(recursive: true)
-                
-                displayedCards[i] = model
-                
-            }
-        }
-        arView.scene.addAnchor(anchor)
-        
-        for (i, card) in displayedCards.enumerated() {
-            
-            let position = positions[i]
-            
-            card.position = [position.x * 0.05, 0, position.z * 0.05]
-            
-            anchor.addChild(card)
-        }
-        
+        // TODO
     }
     
     func restartGame(){

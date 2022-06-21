@@ -16,23 +16,21 @@ class ViewController: UIViewController {
    // @IBOutlet var sceneView: ARSCNView!
     @IBOutlet var arView: ARView!
     
-    var positions: [position] = []
-    var anchor: AnchorEntity = AnchorEntity()
-    var deck: [Entity] = []
-    var openCards: [Entity] = []
-    var values: [Int:String] = [:]
-    var displayedCards: [Entity] = []
-    var buttons: [Entity] = []
-    var currentVal: Int = 0
-    var firstGame: Bool = true
-    var isAlive: Bool = true
-    var higherLower: String = "lower"
+    var positions: [position] = [] // positions for cards
+    var cardsAnchor: AnchorEntity = AnchorEntity() // anchor entity for cards
+    var openCards: [Entity] = [] // already opened cards
+    var values: [Int:String] = [:] // 16 cards to play with eg: key: 0, value: "Cross 9"
+    var displayedCards: [Entity] = [] // the 16 cards which are currently displayed (open / hidden)
+    var buttons: [Entity] = [] // the buttons to work with
+    var currentVal: Int = 0 // value of last open card
+    var firstGame: Bool = true // in case we want to restart
+    var isAlive: Bool = true // check if game is still alive
+    var higherLower: String = "lower" // the current answer
     var currentRow: Int = 1
     
     override func viewDidLoad() {
         
-        
-        
+        // cards
         positions.append(position(_x: 0, _y: 0, _z: 2))
         positions.append(position(_x: -0.5, _y: 0, _z: 1))
         positions.append(position(_x: 0.5, _y: 0, _z: 1))
@@ -60,7 +58,9 @@ class ViewController: UIViewController {
         
     }
     
-    
+    /**
+     Add some models to the scene
+     */
     func initModels(){
         
         let models: [String] = ["toy_biplane", "toy_car", "toy_drummer", "toy_robot_vintage"]
@@ -82,13 +82,11 @@ class ViewController: UIViewController {
             }
             x += 0.2
         }
-        
-        
-        
-
     }
     
-    
+    /**
+     Init all 56 cards and pick 16 in a random manure
+     */
     func initCards(){
         
         // Cards
@@ -105,8 +103,7 @@ class ViewController: UIViewController {
                 letter = "K"
              default:
                 letter = "P"
-            
-                
+               
             }
             for i in 2...14{
                 let cardNum: String = letter + String(i)
@@ -121,18 +118,17 @@ class ViewController: UIViewController {
             values[i] = numbers[i]
         }
         
-        // back of cards
+        // back of cards ("hidden cards")
         for i in 0...15 {
             let box = MeshResource.generateBox(width: 0.026, height: 0.001, depth: 0.039)
-            
             var material = SimpleMaterial()
             
             guard let val = values[i] else{
                 break
             }
             
+            // open first card
             if i == 0{
-                
                 material.color = .init(tint: .white.withAlphaComponent(0.999),
                                        texture: .init(try! .load(named: val)))
                 
@@ -142,11 +138,10 @@ class ViewController: UIViewController {
             }else{
                 material.color = .init(tint: .white.withAlphaComponent(0.999),
                                        texture: .init(try! .load(named: "background")))
-                
             }
             
-            material.metallic = .float(0.9) // 1.0
-            material.roughness = .float(0.1) // 0.0
+            material.metallic = .float(0.9)
+            material.roughness = .float(0.1)
             
             let model = ModelEntity(mesh: box, materials: [material])
             model.generateCollisionShapes(recursive: true)
@@ -160,23 +155,24 @@ class ViewController: UIViewController {
         
     }
     
+    /**
+     Init the scene to start the game
+     */
     func initScene(){
         
         // if false -> create "new game" but same positions
         if firstGame == true{
-            anchor = AnchorEntity(plane: .horizontal, minimumBounds: [0.2,0.2])
+            cardsAnchor = AnchorEntity(plane: .horizontal, minimumBounds: [0.2,0.2])
             firstGame = false
         }
         // add anchor
-        arView.scene.addAnchor(anchor)
+        arView.scene.addAnchor(cardsAnchor)
         
         // add cards to scene (anchor)
         for (i, card) in displayedCards.enumerated() {
-            
             let position = positions[i]
             card.position = [position.x * 0.05, 0, position.z * 0.05]
-            
-            anchor.addChild(card)
+            cardsAnchor.addChild(card)
         }
         
         
@@ -206,34 +202,36 @@ class ViewController: UIViewController {
         
         buttons.append(higherModel)
         buttons.append(lowerModel)
-        anchor.addChild(higherModel)
-        anchor.addChild(lowerModel)
+        cardsAnchor.addChild(higherModel)
+        cardsAnchor.addChild(lowerModel)
         
     }
     
+    /**
+     Repaints the entire scene with all 16 cards
+     */
     func repaint(){
                 
         // TODO
     }
     
+    /**
+     If the game ended due to success or failure
+     */
     func restartGame(){
         
         // delete cards
         for (i, card) in displayedCards.enumerated(){
             let position = positions[i]
-            
             card.position = [position.x * 0.05, 0, position.z * 0.05]
-            
-            anchor.removeChild(card)
+            cardsAnchor.removeChild(card)
         }
         displayedCards = []
         openCards = []
         
         for (_, button)in buttons.enumerated(){
-            anchor.removeChild(button)
+            cardsAnchor.removeChild(button)
         }
-       
-        
         
         buttons = []
         isAlive = true
@@ -244,7 +242,7 @@ class ViewController: UIViewController {
         
     }
     
-    // tap on card to flip it
+    // tap on card handler to decide which button or card has been clicked
     @IBAction func OnTap(_ sender: UITapGestureRecognizer) {
         let tapLocation = sender.location(in: arView)
         if let card = arView.entity(at: tapLocation) {// tap location point
@@ -260,7 +258,7 @@ class ViewController: UIViewController {
                 }
                 higherLower = "higher"
                 for (_, button)in buttons.enumerated(){
-                    anchor.removeChild(button)
+                    cardsAnchor.removeChild(button)
                 }
                 
                 let box = MeshResource.generatePlane(width: 0.04, depth: 0.03, cornerRadius: 0.1)
@@ -272,15 +270,92 @@ class ViewController: UIViewController {
                 let higherModel = ModelEntity(mesh: box, materials: [higherMaterial])
                 higherModel.generateCollisionShapes(recursive: true)
                 
+                var lowerMaterial = SimpleMaterial()
+                lowerMaterial.color = .init(tint: .white.withAlphaComponent(0.999),
+                                            texture: .init(try! .load(named: "lower")))
+                lowerMaterial.metallic = .float(0.9) // 1.0
+                lowerMaterial.roughness = .float(0.1) // 0.0
+                
+                let lowerModel = ModelEntity(mesh: box, materials: [lowerMaterial])
+                lowerModel.generateCollisionShapes(recursive: true)
+                
                 higherModel.position = [-0.08, 0, 0.04]
                 higherModel.accessibilityLabel = "higher"
-                
+                lowerModel.position = [-0.08 , 0, 0.08]
+                lowerModel.accessibilityLabel = "lower"
                 
                 buttons.append(higherModel)
-                anchor.addChild(higherModel)
+                buttons.append(lowerModel)
+                cardsAnchor.addChild(higherModel)
+                cardsAnchor.addChild(lowerModel)
+                
+            case "lower":
+                
+                if isAlive == false{
+                    return
+                }
+                higherLower = "lower"
+                for (_, button)in buttons.enumerated(){
+                    cardsAnchor.removeChild(button)
+                }
+                
+                let box = MeshResource.generatePlane(width: 0.04, depth: 0.03, cornerRadius: 0.1)
+                var higherMaterial = SimpleMaterial()
+                higherMaterial.color = .init(tint: .white.withAlphaComponent(0.999),
+                                             texture: .init(try! .load(named: "higher")))
+                higherMaterial.metallic = .float(0.9) // 1.0
+                higherMaterial.roughness = .float(0.1) // 0.0
+                let higherModel = ModelEntity(mesh: box, materials: [higherMaterial])
+                higherModel.generateCollisionShapes(recursive: true)
+                
+                var lowerMaterial = SimpleMaterial()
+                lowerMaterial.color = .init(tint: .white.withAlphaComponent(0.999),
+                                            texture: .init(try! .load(named: "lowerSelected")))
+                lowerMaterial.metallic = .float(0.9) // 1.0
+                lowerMaterial.roughness = .float(0.1) // 0.0
+                
+                let lowerModel = ModelEntity(mesh: box, materials: [lowerMaterial])
+                lowerModel.generateCollisionShapes(recursive: true)
+                
+                higherModel.position = [-0.08, 0, 0.04]
+                higherModel.accessibilityLabel = "higher"
+                lowerModel.position = [-0.08 , 0, 0.08]
+                lowerModel.accessibilityLabel = "lower"
+                
+                buttons.append(higherModel)
+                buttons.append(lowerModel)
+                cardsAnchor.addChild(higherModel)
+                cardsAnchor.addChild(lowerModel)
+                
+            case "restart":
+                
+                restartGame()
                
+            case "success":
+                restartGame()
             default:
-                print("TODO")
+                if (isAlive == true && validRow(label: label) == true){
+                    calculateValue(label: label)
+                    openCards.append(card)
+                    
+                    if (openCards.count == 7){ // success
+                        let box = MeshResource.generateBox(width: 0.05, height: 0.001, depth: 0.05, splitFaces: false)
+                        var restartMaterial = SimpleMaterial()
+                        restartMaterial.color = .init(tint: .white.withAlphaComponent(0.999),
+                                                      texture: .init(try! .load(named: "success")))
+                        restartMaterial.metallic = .float(0.9) // 1.0
+                        restartMaterial.roughness = .float(0.1) // 0.0
+                        let restartModel = ModelEntity(mesh: box, materials: [restartMaterial])
+                        restartModel.generateCollisionShapes(recursive: true)
+                        
+                        restartModel.position = [-0.14 , 0, 0.06]
+                        restartModel.accessibilityLabel = "success"
+                        
+                        buttons.append(restartModel)
+                        cardsAnchor.addChild(restartModel)
+                        isAlive = false
+                    }
+                }
                 
             }
             
@@ -289,6 +364,9 @@ class ViewController: UIViewController {
         repaint()
     }
     
+    /**
+     Calculate if the selected card is valid (only next in line is allowed)
+     */
     func validRow(label: String) -> Bool{
         
         let row: Int
@@ -319,9 +397,7 @@ class ViewController: UIViewController {
        default: // 15
             row = 7
         }
-        
-        print("row: \(row)")
-        
+                
         if (currentRow + 1 == row){
             currentRow = row
             return true
@@ -329,6 +405,9 @@ class ViewController: UIViewController {
         return false
     }
     
+    /**
+     Calculates the value of the card, eg: king = 13, queen = 12, ...
+     */
     func calculateValue(label: String){
         let range = label.index(after: label.startIndex)..<label.endIndex
         let val = Int(label[range]) ?? 0 // value of tapped card
@@ -352,13 +431,16 @@ class ViewController: UIViewController {
             restartModel.accessibilityLabel = "restart"
             
             buttons.append(restartModel)
-            anchor.addChild(restartModel)
+            cardsAnchor.addChild(restartModel)
             isAlive = false
             
         }
         
     }
     
+    /**
+     x, y, z coordinates of cards
+     */
     struct position{
         var x: Float
         var y: Float

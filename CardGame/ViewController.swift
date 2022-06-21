@@ -272,92 +272,15 @@ class ViewController: UIViewController {
                 let higherModel = ModelEntity(mesh: box, materials: [higherMaterial])
                 higherModel.generateCollisionShapes(recursive: true)
                 
-                var lowerMaterial = SimpleMaterial()
-                lowerMaterial.color = .init(tint: .white.withAlphaComponent(0.999),
-                                            texture: .init(try! .load(named: "lower")))
-                lowerMaterial.metallic = .float(0.9) // 1.0
-                lowerMaterial.roughness = .float(0.1) // 0.0
-                
-                let lowerModel = ModelEntity(mesh: box, materials: [lowerMaterial])
-                lowerModel.generateCollisionShapes(recursive: true)
-                
                 higherModel.position = [-0.08, 0, 0.04]
                 higherModel.accessibilityLabel = "higher"
-                lowerModel.position = [-0.08 , 0, 0.08]
-                lowerModel.accessibilityLabel = "lower"
+                
                 
                 buttons.append(higherModel)
-                buttons.append(lowerModel)
                 anchor.addChild(higherModel)
-                anchor.addChild(lowerModel)
-                
-            case "lower":
-                
-                if isAlive == false{
-                    return
-                }
-                higherLower = "lower"
-                for (_, button)in buttons.enumerated(){
-                    anchor.removeChild(button)
-                }
-                
-                let box = MeshResource.generatePlane(width: 0.04, depth: 0.03, cornerRadius: 0.1)
-                var higherMaterial = SimpleMaterial()
-                higherMaterial.color = .init(tint: .white.withAlphaComponent(0.999),
-                                             texture: .init(try! .load(named: "higher")))
-                higherMaterial.metallic = .float(0.9) // 1.0
-                higherMaterial.roughness = .float(0.1) // 0.0
-                let higherModel = ModelEntity(mesh: box, materials: [higherMaterial])
-                higherModel.generateCollisionShapes(recursive: true)
-                
-                var lowerMaterial = SimpleMaterial()
-                lowerMaterial.color = .init(tint: .white.withAlphaComponent(0.999),
-                                            texture: .init(try! .load(named: "lowerSelected")))
-                lowerMaterial.metallic = .float(0.9) // 1.0
-                lowerMaterial.roughness = .float(0.1) // 0.0
-                
-                let lowerModel = ModelEntity(mesh: box, materials: [lowerMaterial])
-                lowerModel.generateCollisionShapes(recursive: true)
-                
-                higherModel.position = [-0.08, 0, 0.04]
-                higherModel.accessibilityLabel = "higher"
-                lowerModel.position = [-0.08 , 0, 0.08]
-                lowerModel.accessibilityLabel = "lower"
-                
-                buttons.append(higherModel)
-                buttons.append(lowerModel)
-                anchor.addChild(higherModel)
-                anchor.addChild(lowerModel)
-                
-            case "restart":
-                
-                restartGame()
                
-            case "success":
-                restartGame()
             default:
-                if (isAlive == true && validRow(label: label) == true){
-                    calculateValue(label: label)
-                    openCards.append(card)
-                    
-                    if (openCards.count == 7){ // success
-                        let box = MeshResource.generateBox(width: 0.05, height: 0.001, depth: 0.05, splitFaces: false)
-                        var restartMaterial = SimpleMaterial()
-                        restartMaterial.color = .init(tint: .white.withAlphaComponent(0.999),
-                                                      texture: .init(try! .load(named: "success")))
-                        restartMaterial.metallic = .float(0.9) // 1.0
-                        restartMaterial.roughness = .float(0.1) // 0.0
-                        let restartModel = ModelEntity(mesh: box, materials: [restartMaterial])
-                        restartModel.generateCollisionShapes(recursive: true)
-                        
-                        restartModel.position = [-0.14 , 0, 0.06]
-                        restartModel.accessibilityLabel = "success"
-                        
-                        buttons.append(restartModel)
-                        anchor.addChild(restartModel)
-                        isAlive = false
-                    }
-                }
+                print("TODO")
                 
             }
             

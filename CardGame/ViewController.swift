@@ -211,8 +211,49 @@ class ViewController: UIViewController {
      Repaints the entire scene with all 16 cards
      */
     func repaint(){
+        
+        let box  = MeshResource.generateBox(width: 0.026, height: 0.001, depth: 0.039, splitFaces: false)
+        
+        
+        for(i, card) in displayedCards.enumerated(){
+            
+            let position = positions[i]
+            
+            card.position = [position.x * 0.05, 0, position.z * 0.05]
+            
+            if openCards.contains(card){
+                cardsAnchor.removeChild(card)
                 
-        // TODO
+                guard let val = values[i] else{
+                    return
+                }
+                
+                var material = SimpleMaterial()
+                material.color = .init(tint: .white, texture: .init(try! .load(named: val)))
+                
+                material.metallic = .float(0.9)
+                material.roughness = .float(0.1)
+                
+                let model = ModelEntity(mesh: box, materials: [material])
+                model.generateCollisionShapes(recursive: true)
+                
+                displayedCards[i] = model
+                
+            }
+            
+            arView.scene.addAnchor(cardsAnchor)
+            
+            for (i, card) in displayedCards.enumerated(){
+                 let position = positions[i]
+                
+                card.position = [position.x * 0.05, 0, position.z * 0.05]
+
+                cardsAnchor.addChild(card)
+                
+            }
+            
+        }
+                
     }
     
     /**
